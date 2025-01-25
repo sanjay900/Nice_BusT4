@@ -3,6 +3,9 @@ import esphome.config_validation as cv
 from esphome.components import cover
 from esphome.const import CONF_ADDRESS, CONF_ID, CONF_UPDATE_INTERVAL, CONF_USE_ADDRESS
 
+DEPENDENCIES = ["uart"]
+
+AUTO_LOAD = ["cover"]
 
 
 bus_t4_ns = cg.esphome_ns.namespace('bus_t4')
