@@ -7,7 +7,6 @@ namespace esphome {
 namespace bus_t4 {
 
 static const char *TAG = "bus_t4.cover";
-
 using namespace cover;
 
 CoverTraits NiceBusT4::get_traits() {
@@ -19,7 +18,7 @@ CoverTraits NiceBusT4::get_traits() {
 
 
 /*
-  command dumps OVIEW
+  command dumps overview
 
   SBS               55 0c 00 ff 00 66 01 05 9D 01 82 01 64 E6 0c
   STOP              55 0c 00 ff 00 66 01 05 9D 01 82 02 64 E5 0c

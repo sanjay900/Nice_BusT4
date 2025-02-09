@@ -1,24 +1,24 @@
 #pragma once
-/* Тип сообщения пакетов
-  пока нас интересует только CMD и INF
-  остальные глубоко не изучал и номера не проверял
-  6-й байт пакетов CMD и INF
+/* Type of packet message
+   Currently, we are only interested in CMD and INF
+   The rest have not been studied in depth, and their numbers have not been verified
+   6th byte of CMD and INF packets
 */
 enum mes_type : uint8_t {
-  CMD = 0x01,  /* номер проверен, отправка команд автоматике */
-//  LSC = 0x02,  /* работа со списками сценариев */
-//  LST = 0x03,  /* работа со списками автоматик */
-//  POS = 0x04,  /* запрос и изменение позиции автоматики */
-//  GRP = 0x05,  /* отправка команд группе автоматик с указанием битовой маски мотора */
-//  SCN = 0x06,  /* работа со сценариями */
-//  GRC = 0x07,  /* отправка команд группе автоматик, созданных через Nice Screen Configuration Tool */
-  INF = 0x08,  /* возвращает или устанавливает информацию об устройстве */
-//  LGR = 0x09,  /* работа со списками групп */
-//  CGR = 0x0A,  /* работа с категориями групп, созданных через Nice Screen Configuration Tool */
+  CMD = 0x01,  /* Number verified, sending commands to automation */
+//  LSC = 0x02,  /* Working with scenario lists */
+//  LST = 0x03,  /* Working with automation lists */
+//  POS = 0x04,  /* request and change the position of automation */
+//  GRP = 0x05,  /* sending commands to a group of automation with a specified motor bitmask */
+//  SCN = 0x06,  /* working with scenarios */
+//  GRC = 0x07,  /* sending commands to a group of automation created through the Nice Screen Configuration Tool */
+  INF = 0x08,  /* returns or sets information about the device */
+//  LGR = 0x09,  /* working with group lists */
+//  CGR = 0x0A,  /* working with group categories created through the Nice Screen Configuration Tool */
 };
 
 /*
-меню команды в иерархии oview
+command menu in the oview hierarchy
 9-й байт пакетов CMD
 */
 enum cmd_mnu  : uint8_t {
