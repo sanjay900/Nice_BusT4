@@ -34,7 +34,6 @@ From the manual nice_dmbm_integration_protocol.pdf:
 
 #pragma once
 
-#include "esphome.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/cover/cover.h"
 #include "esphome/core/component.h"
@@ -129,28 +128,25 @@ class NiceBusT4 : public cover::Cover, public Component, public uart::UARTDevice
     float last_published_pos{-1};
 
     void publish_state_if_changed(void);
-
+    
     uint8_t position_hook_type{IGNORE};  // Флаг и позиция установки заданного положения привода
     uint16_t position_hook_value;
 
     uint8_t class_gate_ = 0x55; // 0x01 sliding, 0x02 sectional, 0x03 swing, 0x04 barrier, 0x05 up-and-over
-//    uint8_t last_init_command_;
 	
     bool init_cu_flag = false;
     bool init_oxi_flag = false;
+    
+    // Variables for UART
+    uint16_t _max_opn = 0;  // Maximum position of the encoder or timer
+    uint16_t _pos_opn = 2048;  // Opening position of the encoder or timer, not for all drives
+    uint16_t _pos_cls = 0;  // Closing position of the encoder or timer, not for all drives
+    uint16_t _pos_usl = 0;  // Conditional current position of the encoder or timer, not for all drives
 
-	
-    // переменные для uart
-    uint8_t _uart_nr;
-    uart_t* _uart = nullptr;
-    uint16_t _max_opn = 0;  // максимальная позиция энкодера или таймера
-    uint16_t _pos_opn = 2048;  // позиция открытия энкодера или таймера, не для всех приводов.
-    uint16_t _pos_cls = 0;  // позиция закрытия энкодера или таймера, не для всех приводов
-    uint16_t _pos_usl = 0;  // условная текущая позиция энкодера или таймера, не для всех приводов	
-    // настройки заголовка формируемого пакета
-    uint8_t addr_from[2] = {0x00, 0x66}; //от кого пакет, адрес bust4 шлюза
-    uint8_t addr_to[2]; // = 0x00ff;	 // кому пакет, адрес контроллера привода, которым управляем
-    uint8_t addr_oxi[2]; // = 0x000a;	 // адрес приемника
+    // Settings for the generated packet header
+    uint8_t addr_from[2] = {0x00, 0x66}; // Sender of the packet, address of the bust4 gateway
+    uint8_t addr_to[2]; // = 0x00ff;  // Recipient of the packet, address of the drive controller being controlled
+    uint8_t addr_oxi[2]; // = 0x000a;  // Address of the receiver
 
     std::vector<uint8_t> raw_cmd_prepare (std::string data);             // подготовка введенных пользователем данных для возможности отправки	
 	

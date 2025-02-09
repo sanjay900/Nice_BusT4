@@ -1,13 +1,15 @@
 #include "nice-bust4.h"
+#include "esphome/core/hal.h"
+#include "esphome/core/log.h"
 #include "esphome/core/log.h"
 #include "esphome/core/helpers.h"
-#include "esphome/components/uart/uart.h"
 
 namespace esphome {
 namespace bus_t4 {
 
 static const char *TAG = "bus_t4.cover";
-using namespace cover;
+
+using namespace esphome::cover;
 
 CoverTraits NiceBusT4::get_traits() {
   auto traits = CoverTraits();
@@ -15,7 +17,6 @@ CoverTraits NiceBusT4::get_traits() {
   traits.set_supports_stop(true);
   return traits;
 }
-
 
 /*
   command dumps overview
@@ -61,12 +62,9 @@ void NiceBusT4::control(const CoverCall &call) {
 }
 
 void NiceBusT4::setup() {
-  // Enable UART
- // this->parent_->start();
 
 
-  // who's online?
-  // this->tx_buffer_.push(gen_inf_cmd(0x00, 0xff, FOR_ALL, WHO, GET, 0x00));
+  this->current_operation = COVER_OPERATION_IDLE;
 }
 
 void NiceBusT4::loop() {
