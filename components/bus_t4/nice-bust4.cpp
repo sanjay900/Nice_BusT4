@@ -101,6 +101,7 @@ void NiceBusT4::loop() {
 
 
   while (this->parent_->available() > 0) {
+
     uint8_t c = this->read();                // read byte
     this->handle_char_(c);                                     // send byte for processing
     this->last_uart_byte_ = now;
@@ -128,6 +129,9 @@ void NiceBusT4::loop() {
 
 
 void NiceBusT4::handle_char_(uint8_t c) {
+  if (this->rx_message_.size() == 0) {
+    this->rx_message_.push_back(0);
+  }
   this->rx_message_.push_back(c);                      // throw a byte at the end of the received message
   if (!this->validate_message_()) {                    // check the resulting message
     this->rx_message_.clear();                         // If the check fails, the message is garbage and should be deleted.
@@ -230,6 +234,7 @@ void NiceBusT4::parse_status_packet (const std::vector<uint8_t> &data) {
   if ((data[1] == 0x0d) && (data[13] == 0xFD)) { // mistake
     ESP_LOGE(TAG,  "The command is not available for this device" );
   }
+
 
   if (((data[11] == GET - 0x80) || (data[11] == GET - 0x81)) && (data[13] == NOERR)) { // if evt
   //  ESP_LOGD(TAG, "An EVT packet of data has been received. Last cell %d ", data[12]);
@@ -628,6 +633,106 @@ void NiceBusT4::parse_status_packet (const std::vector<uint8_t> &data) {
 
 
   } // else
+  if ((data[6] == CMD) && (data[9] == FOR_CU)  && (data[10] == CUR_MAN) && (data[13] == NOERR)) {
+    // FOR_CU responses to CMD queries that came without errors are of interest. We are looking for the status for RO600
+    ///////////////////////////////////////////////////////////////////////////////////
+
+
+  // RSP ответ (ReSPonce) на простой прием команды CMD, а не ее выполнение. Также докладывает о завершении операции.
+  /* if ((data[1] == 0x0E) && (data[6] == CMD) && (data[9] == FOR_CU) && (data[10] == CUR_MAN) && (data[12] == 0x19)) { // узнаём пакет статуса по содержимому в определённых байтах
+     //  ESP_LOGD(TAG, "Получен пакет RSP. cmd = %#x", data[11]);
+*/
+    switch (data[11]) {
+      case STA_OPENING:
+        this->current_operation = COVER_OPERATION_OPENING;
+        ESP_LOGD(TAG, "Status: Opening");
+        break;
+      case STA_CLOSING:
+        this->current_operation = COVER_OPERATION_CLOSING;
+        ESP_LOGD(TAG, "Status: Closing");
+        break;
+    this->publish_state();  // publish the status
+   } //if
+  }
+  /*
+    // статус после достижения концевиков
+    if ((data[1] == 0x0E) && (data[6] == CMD) && (data[9] == FOR_CU) && (data[10] == CUR_MAN) &&  (data[12] == 0x00)) { // узнаём пакет статуса по содержимому в определённых байтах
+      ESP_LOGD(TAG, "Получен пакет концевиков. Статус = %#x", data[11]);
+      switch (data[11]) {
+        case OPENED:
+          this->position = COVER_OPEN;
+          ESP_LOGD(TAG, "Статус: Открыто");
+          this->current_operation = COVER_OPERATION_IDLE;
+          break;
+        case CLOSED:
+          this->position = COVER_CLOSED;
+          ESP_LOGD(TAG, "Статус: Закрыто");
+          this->current_operation = COVER_OPERATION_IDLE;
+          break;
+        case OPENING:
+          this->current_operation = COVER_OPERATION_OPENING;
+          ESP_LOGD(TAG, "Статус: Открывается");
+          break;
+        case CLOSING:
+          this->current_operation = COVER_OPERATION_CLOSING;
+          ESP_LOGD(TAG, "Статус: Закрывается");
+          break;
+      } //switch
+      this->publish_state();  // публикуем состояние
+    } //if
+  */
+  // STA = 0x40,   // статус в движении
+  /*
+    if ((data[1] == 0x0E) && (data[6] == CMD) && (data[9] == FOR_CU) && (data[10] == STA) ) { // узнаём пакет статуса по содержимому в определённых байтах
+      uint16_t ipos = (data[12] << 8) + data[13];
+      ESP_LOGD(TAG, "Текущий маневр: %#X Позиция: %#X %#X, ipos = %#x,", data[11], data[12], data[13], ipos);
+      this->position = ipos / 2100.0f; // передаем позицию компоненту
+
+      switch (data[11]) {
+        case OPENING:
+          this->current_operation = COVER_OPERATION_OPENING;
+          ESP_LOGD(TAG, "Статус: Открывается");
+          break;
+
+        case OPENING2:
+          this->current_operation = COVER_OPERATION_OPENING;
+          ESP_LOGD(TAG, "Статус: Открывается");
+          break;
+
+        case CLOSING:
+          this->current_operation = COVER_OPERATION_CLOSING;
+          ESP_LOGD(TAG, "Статус: Закрывается");
+          break;
+        case CLOSING2:
+          this->current_operation = COVER_OPERATION_CLOSING;
+          ESP_LOGD(TAG, "Статус: Закрывается");
+          break;
+        case OPENED:
+          this->position = COVER_OPEN;
+          this->current_operation = COVER_OPERATION_IDLE;
+          ESP_LOGD(TAG, "Статус: Открыто");
+          //      this->current_operation = COVER_OPERATION_OPENING;
+          //    ESP_LOGD(TAG, "Статус: Открывается");
+          break;
+        case CLOSED:
+          this->position = COVER_CLOSED;
+          this->current_operation = COVER_OPERATION_IDLE;
+          ESP_LOGD(TAG, "Статус: Закрыто");
+          //      this->current_operation = COVER_OPERATION_CLOSING;
+          //ESP_LOGD(TAG, "Статус: Закрывается");
+          break;
+        case STOPPED:
+          this->current_operation = COVER_OPERATION_IDLE;
+          ESP_LOGD(TAG, "Статус: Остановлено");
+          break;
+
+      }  // switch
+
+      this->publish_state();  // публикуем состояние
+
+    } //if
+  */
+
 
   ////////////////////////////////////////////////////////////////////////////////////////
 } // function
@@ -798,21 +903,21 @@ void NiceBusT4::send_array_cmd (std::vector<uint8_t> data) {          // sends b
 }
 void NiceBusT4::send_array_cmd (const uint8_t *data, size_t len) {
   // sending data to uart
-
   uint8_t br_ch = 0x00;                                               // to break
   this->parent_->flush();                                               // clear uart
   this->parent_->set_baud_rate(BAUD_BREAK);                            // undercutting
+  this->parent_->load_settings(false);
   this->parent_->write_byte(br_ch);                                    // sending zero at low speed, long zero.
   this->parent_->flush();
-
   delayMicroseconds(90);                                          // add a delay to the wait, otherwise the speed will switch before sending. With the delay on d1-mini I got a perfect signal, break = 520us
 
   this->parent_->set_baud_rate(BAUD_WORK);                             // getting back to work awake
+  this->parent_->load_settings(false);
   this->parent_->write_array(data, len);                                // sending the main parcel
   this->parent_->flush();
 
   std::string pretty_cmd = format_hex_pretty((uint8_t*)&data[0], len);                    // to output the command to the log
-  ESP_LOGI(TAG,  "Posted: %S ", pretty_cmd.c_str() );
+  ESP_LOGI(TAG,  "Posted: %S", pretty_cmd.c_str());
 
 }
 
